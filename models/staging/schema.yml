@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: staging
+    database: vaulted-epigram-412216
+    schema: airflow_taxi_data_2019_2021
+
+    tables:
+      - name: airflow_green_taxi_data_2019_2021_table_v1
+      - name: airflow_taxi_data_2019_2021_table_v1
