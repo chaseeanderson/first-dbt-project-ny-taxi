@@ -1,5 +1,13 @@
 {{ config(materialized='view') }}
 
+with tripdata as 
+(
+  select *,
+    row_number() over(partition by vendorid, lpep_pickup_datetime) as rn
+  from {{ source('staging', 'airflow_green_taxi_data_2019_2021_table_v1') }}
+  where vendorid is not null 
+)
+
 select
     -- identifiers
     {{ dbt_utils.surrogate_key(['vendorid', 'lpep_pickup_datetime']) }} as tripid,
@@ -30,8 +38,8 @@ select
     coalesce({{ dbt.safe_cast("payment_type", api.Column.translate_type("integer")) }},0) as payment_type,
     {{ get_payment_type_description('payment_type') }} as payment_type_description
 
-from {{ source('staging', 'airflow_green_taxi_data_2019_2021_table_v1') }}
-where vendorid is not null
+from tripdata
+where rn = 1
 -- CLI variable to run with or without limit
 {% if var('is_test_run', default=true) %}
     limit 100
